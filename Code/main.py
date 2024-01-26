@@ -5,8 +5,7 @@ import getopt
 
 if __name__ == "__main__":
 
-    rawData = 'plcMapping'
-    testData = 'plcTest'
-    generateData = 'plcTestDataPred'
+    inputPath = "C://Users//phn73//Desktop//plcTest"
+    outputPath = "C://Users//phn73//Desktop//plcPred"
 
-    plcAdd(rawData, testData, generateData)
+    plcAdd(inputPath, outputPath)
