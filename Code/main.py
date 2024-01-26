@@ -1,11 +1,10 @@
 from plcDataMatch import plcAdd
 import sys
-import getopt
 
 
 if __name__ == "__main__":
 
-    inputPath = "C://Users//phn73//Desktop//plcTest"
-    outputPath = "C://Users//phn73//Desktop//plcPred"
+    inputPath = sys.argv[1]
+    outputPath = sys.argv[2]
 
     plcAdd(inputPath, outputPath)
