@@ -19,3 +19,4 @@
 ### python 3.8
 ### pandas 1.4.2
 ### jieba 0.42.1
+### openpyxl 3.0.10
