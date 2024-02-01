@@ -4,8 +4,6 @@ from plcDataMerge import plcMerge
 from plcDataProcess import plcProcessing, plcTestProcessing
 from plcDataTokenization import plcFenci, plcTestFenci
 from fenciPad import plcPadding, plcTestPadding
-from openpyxl import load_workbook
-from openpyxl.styles import PatternFill
 import os
 
 
@@ -14,6 +12,9 @@ def string_similar(s1, s2):
 
 
 def plcAdd(inputPath, outputPath):
+
+    inputPath = inputPath.rsplit('.')[-2]
+    outputPath = outputPath.rsplit('.')[-2]
 
     path = os.getcwd()
     plcTestProcessing(inputPath)
@@ -25,18 +26,20 @@ def plcAdd(inputPath, outputPath):
     plcFenci()
     plcPadding()
 
-    TestData = pd.read_excel(inputPath + '.xlsx')
-    RawDataMerge = pd.read_excel(path + '//Files//plcMappingMerge.xlsx')
-    RawDataProcess = pd.read_excel(path + '//Files//plcMappingProcess.xlsx')
+    TestData = pd.read_csv(inputPath + '.csv')
+    TestData = TestData.loc[:,['Name']]
+    RawDataMerge = pd.read_csv(path + '//Files//plcMappingMerge.csv')
+    RawDataProcess = pd.read_csv(path + '//Files//plcMappingProcess.csv')
     RawDataProcess_label = RawDataProcess['Category']
     
     with open(inputPath + 'FenciPad2.txt', "r") as f:
         #测试数据的fenciPad2表
         TestDataFenciPad2 = f.readlines()
     
-    PredIdx = []
+    PredIdx, idlist = [], []
     for w in range(len(TestData['Name'])):
     #经典匹配
+        idlist.append(w+1)
         if TestData.at[w, 'Name'] in RawDataMerge['Name'].values:
             TestData.at[w, 'Mechanism'] = RawDataMerge[RawDataMerge['Name'] == TestData.at[w, 'Name']].iloc[0,1]
             TestData.at[w, 'Components'] = RawDataMerge[RawDataMerge['Name'] == TestData.at[w, 'Name']].iloc[0,2]
@@ -47,31 +50,27 @@ def plcAdd(inputPath, outputPath):
             TestDataFenciPad2[w] = TestDataFenciPad2[w].strip('\n').split() 
             sv = []
             for v in range(len(RawDataProcess_label)):
+
+                RawDataProcess_label[v] = RawDataProcess_label[v].replace('[', '').replace(']', '')\
+                    .replace(',', '').replace('\'', '').replace(' ','')
+                
                 sv.append(string_similar(''.join(TestDataFenciPad2[w]), ''.join(RawDataProcess_label[v])))
             idx = sv.index(max(sv))
+            #print(''.join(TestDataFenciPad2[w]), '------------', ''.join(RawDataProcess_label[idx]), '------------', max(sv))
             TestData.at[w, 'Mechanism'] = RawDataMerge.at[idx, 'Mechanism']
             TestData.at[w, 'Components'] = RawDataMerge.at[idx, 'Components']
             TestData.at[w, 'InnerMonitoring'] = RawDataMerge.at[idx, 'InnerMonitoring']
             TestData.at[w, 'Similarity'] = max(sv)
             PredIdx.append(w+2)
 
-    TestData =TestData.sort_values(by='Similarity')
-    TestData.to_excel(outputPath + '.xlsx', index=False)
+    #TestData =TestData.sort_values(by='Similarity')
+    TestData.insert(loc=0, column='id', value=idlist)
+    TestData['id'] = TestData['id'].astype(int)
+    TestData.to_csv(outputPath + '.csv', index=False)
 
-    #分词匹配颜色显示
-    wb = load_workbook(outputPath + '.xlsx')
-    wb_name = wb.sheetnames
-    sheet = wb[wb_name[0]]
-    fille = PatternFill('solid', fgColor='00FF0000')
-    for i in range(1, len(PredIdx)+1):
-        for j in range(1,sheet.max_column+1):
-                sheet.cell(row=i+1,column=j).fill=fille
-
-    wb.save(outputPath + '.xlsx')
-
-    #os.remove(path + '//Files//plcMappingMerge.xlsx')
-    os.remove(path + '//Files//plcMappingProcess.xlsx')
-    os.remove(inputPath + 'Process.xlsx')
+    os.remove(path + '//Files//plcMappingMerge.csv')
+    os.remove(path + '//Files//plcMappingProcess.csv')
+    os.remove(inputPath + 'Process.csv')
 
     os.remove(path + '//Files//plcMappingProcess.txt')
     os.remove(path + '//Files//plcMappingFenci.txt')

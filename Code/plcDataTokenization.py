@@ -8,7 +8,7 @@ def plcFenci():
 
     PATH = os.getcwd()
     jieba.load_userdict(PATH + '//Files//userDict.txt')
-    df = pd.read_excel(PATH + '//Files//plcMappingProcess.xlsx')
+    df = pd.read_csv(PATH + '//Files//plcMappingProcess.csv')
     df1 = df['Name']
     df1.to_csv(PATH + '//Files//plcMappingProcess.txt', header=None, sep=',', index=False)
 
@@ -28,7 +28,7 @@ def plcTestFenci(path):
 
     PATH = os.getcwd()
     jieba.load_userdict(PATH + '//Files//userDict.txt')
-    df = pd.read_excel(path + 'Process.xlsx')
+    df = pd.read_csv(path + 'Process.csv')
     df1 = df['Name']
     df1.to_csv(path + 'Process.txt', header=None, sep=',', index=False)
 
